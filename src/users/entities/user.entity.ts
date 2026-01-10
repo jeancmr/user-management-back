@@ -5,9 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserPlan } from '../enums/user-plan.enum';
-import { UserRole } from '../enums/user-role.enum';
-import { UserStatus } from '../enums/user-status.enum';
+import { UserPlan, UserRole, UserStatus } from '../enums';
 
 @Entity('users')
 export class User {
