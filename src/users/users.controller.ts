@@ -16,25 +16,47 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto) {
+    const newUser = await this.usersService.create(createUserDto);
+
+    return {
+      ok: true,
+      method: 'POST',
+      data: newUser,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async findAll() {
+    const data = await this.usersService.findAll();
+
+    return {
+      ok: true,
+      method: 'GET',
+      data,
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    console.log(typeof id);
-    console.log({ id });
-    return this.usersService.findOne(id);
+  async findOne(@Param('id') id: number) {
+    const data = await this.usersService.findOne(id);
+
+    return {
+      ok: true,
+      method: 'GET',
+      data,
+    };
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
+    const data = await this.usersService.update(id, updateUserDto);
+
+    return {
+      ok: true,
+      method: 'PATCH',
+      data,
+    };
   }
 
   @Delete(':id')
