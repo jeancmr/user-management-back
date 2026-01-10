@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { PaginationDto } from 'src/common/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -28,12 +29,27 @@ export class UsersService {
     }
   }
 
-  async findAll() {
-    const [users, total] = await this._userRepository.findAndCount();
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, page = 1 } = paginationDto;
+
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await this._userRepository.findAndCount({
+      skip,
+      take: limit,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
 
     return {
       users,
-      total,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
