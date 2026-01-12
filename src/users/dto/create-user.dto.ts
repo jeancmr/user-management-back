@@ -21,17 +21,21 @@ export class CreateUserDto {
   @IsNotEmpty()
   email: string;
 
-  @IsEnum(UserRole)
+  @IsString()
   @IsNotEmpty()
-  role: UserRole;
+  password: string;
+
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
 
   @IsEnum(UserStatus)
-  @IsNotEmpty()
-  status: UserStatus;
+  @IsOptional()
+  status?: UserStatus;
 
   @IsEnum(UserPlan)
-  @IsNotEmpty()
-  plan: UserPlan;
+  @IsOptional()
+  plan?: UserPlan;
 
   @IsDate()
   @IsOptional()
