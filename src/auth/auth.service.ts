@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +33,7 @@ export class AuthService {
     return userSaved;
   }
 
-  async login({ email, password }: LoginDto) {
+  async login({ email, password }: LoginDto, res: Response) {
     const userFound = await this.usersService.findOneByEmail(email);
 
     if (!userFound) throw new NotFoundException(`User does not exist`);
@@ -48,6 +49,17 @@ export class AuthService {
     const payload = { email };
 
     const token = await this.jwtService.signAsync(payload);
-    return { token, email };
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    const { password: userPassword, ...user } = userFound;
+    console.log(userPassword);
+
+    return { message: 'User logged sucessfully', data: user };
   }
 }
