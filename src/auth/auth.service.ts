@@ -45,6 +45,9 @@ export class AuthService {
     if (!isPasswordMatched)
       throw new UnauthorizedException('Password incorrect');
 
-    return userFound;
+    const payload = { email };
+
+    const token = await this.jwtService.signAsync(payload);
+    return { token, email };
   }
 }
