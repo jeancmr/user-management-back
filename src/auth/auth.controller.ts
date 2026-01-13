@@ -41,4 +41,10 @@ export class AuthController {
     res.clearCookie('access_token');
     return { message: 'Logged out' };
   }
+
+  @Get('verify')
+  @UseGuards(AuthGuard)
+  verify(@Request() req: RequestWithUser) {
+    return req.user;
+  }
 }
