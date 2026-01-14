@@ -22,9 +22,7 @@ export class AuthController {
   @Public()
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
-    const result = this.authservice.register(registerDto);
-
-    return result;
+    return this.authservice.register(registerDto);
   }
 
   @Public()

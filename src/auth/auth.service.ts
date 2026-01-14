@@ -19,18 +19,22 @@ export class AuthService {
   ) {}
   private readonly saltRounds = 12;
 
-  async register({ email, name, password }: RegisterDto) {
+  async register({ email, name, password, company }: RegisterDto) {
     const user = await this.usersService.findOneByEmail(email);
 
     if (user) throw new BadRequestException('User already exists');
 
     const userSaved = await this.usersService.create({
       email,
+      company,
       name,
       password: await bcrypt.hash(password, this.saltRounds),
     });
 
-    return userSaved;
+    const { password: userPassword, ...newUser } = userSaved;
+    console.log(userPassword);
+
+    return { message: 'User signed up sucessfully', data: newUser };
   }
 
   async login({ email, password }: LoginDto, res: Response) {
