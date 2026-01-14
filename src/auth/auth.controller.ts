@@ -13,11 +13,13 @@ import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guard/auth.guard';
 import type { RequestWithUser } from './interfaces/jwt-payload.interface';
 import type { Response } from 'express';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authservice: AuthService) {}
 
+  @Public()
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     const result = this.authservice.register(registerDto);
@@ -25,6 +27,7 @@ export class AuthController {
     return result;
   }
 
+  @Public()
   @Post('login')
   login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     return this.authservice.login(loginDto, res);
