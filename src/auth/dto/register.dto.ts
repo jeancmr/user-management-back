@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
+import { UserPlan, UserRole, UserStatus } from 'src/users/enums';
 
 export class RegisterDto {
   @Transform(({ value }: { value: string }) => value.trim())
@@ -20,4 +28,16 @@ export class RegisterDto {
   @IsString()
   @MinLength(3)
   company: string;
+
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
+
+  @IsEnum(UserStatus)
+  @IsOptional()
+  status?: UserStatus;
+
+  @IsEnum(UserPlan)
+  @IsOptional()
+  plan?: UserPlan;
 }
