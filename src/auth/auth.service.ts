@@ -43,7 +43,7 @@ export class AuthService {
     });
 
     const { password: userPassword, ...newUser } = userSaved;
-    console.log(userPassword);
+    if (userPassword) console.log('user succesfully signed up');
 
     return { message: 'User signed up sucessfully', data: newUser };
   }
@@ -72,8 +72,12 @@ export class AuthService {
       maxAge: 15 * 60 * 1000,
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: userPassword, ...user } = userFound;
-    console.log(userPassword);
+
+    await this.usersService.update(user.id, {
+      lastLogin: new Date(),
+    });
 
     return { message: 'User logged sucessfully', data: user };
   }
