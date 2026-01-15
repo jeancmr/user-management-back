@@ -9,6 +9,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { PaginationDto } from 'src/common/pagination.dto';
+import { UserPlan, UserStatus } from './enums';
+import { getUserGrowthData } from './utils/get-user-growth-data';
+import { getPlanDistributionData } from './utils/get-plan-distribution-data';
+import { getWeeklyActivityData } from './utils/get-weekly-activity-data';
 
 @Injectable()
 export class UsersService {
@@ -81,5 +85,24 @@ export class UsersService {
     await this._userRepository.remove(userFound);
 
     return { message: 'User deleted successfully' };
+  }
+
+  async getUsersSummary() {
+    const users = await this._userRepository.find();
+    return {
+      summary: {
+        totalUsers: users.length,
+        active: users.filter((user) => user.status === UserStatus.ACTIVE)
+          .length,
+        suspended: users.filter((user) => user.status === UserStatus.SUSPENDED)
+          .length,
+        pro: users.filter((user) => user.plan === UserPlan.PRO).length,
+      },
+      analytics: {
+        userGrowth: getUserGrowthData(users),
+        planDistribution: getPlanDistributionData(users),
+        weeklyActivity: getWeeklyActivityData(users),
+      },
+    };
   }
 }

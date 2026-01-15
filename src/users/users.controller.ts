@@ -39,6 +39,17 @@ export class UsersController {
     };
   }
 
+  @Get('/summary-analytics')
+  async getSummary() {
+    const data = await this.usersService.getUsersSummary();
+
+    return {
+      ok: true,
+      method: 'GET',
+      data,
+    };
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: number) {
     const data = await this.usersService.findOne(id);
