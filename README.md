@@ -14,10 +14,26 @@ A RESTful API for user management built with [NestJS](https://nestjs.com/), [Typ
 
 ## ✨ Features
 
-- Full CRUD operations for user management
-- User roles (Admin, User)
-- User status management (Active, Suspended)
-- Subscription plans (Free, Pro)
+- **Authentication & Authorization**
+  - JWT-based authentication with HTTP-only cookies
+  - User registration and login
+  - Password hashing with bcrypt
+  - Protected routes with global AuthGuard
+  - Public route decorator for open endpoints
+- **User Management**
+  - Full CRUD operations for users
+  - User roles (Admin, User)
+  - User status management (Active, Suspended)
+  - Subscription plans (Free, Pro)
+- **Pagination & Filtering**
+  - Paginated user listings
+  - Filter by status, role, and plan
+  - Search by name or email
+- **Analytics Dashboard**
+  - User summary statistics
+  - User growth data
+  - Plan distribution analytics
+  - Weekly activity tracking
 - Input validation with class-validator
 - PostgreSQL database with TypeORM
 - Docker support for database
@@ -25,6 +41,8 @@ A RESTful API for user management built with [NestJS](https://nestjs.com/), [Typ
 ## 🛠 Tech Stack
 
 - 🧠 **NestJS** — Scalable backend framework
+- 🔐 **JWT** — JSON Web Token authentication
+- 🔒 **bcrypt** — Password hashing
 - 🗄 **PostgreSQL** — Relational database
 - 🧬 **TypeORM** — Database ORM for TypeScript
 - 🐳 **Docker** — Consistent local development
@@ -62,6 +80,8 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=your_password
 DB_NAME=user_management
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRES_IN=10m
 ```
 
 ### 4. Start the database
@@ -80,22 +100,71 @@ The API will be available at `http://localhost:3000`. Keep in mind to use the pr
 
 ## 📡 API Endpoints
 
+### Authentication
+
+| Method | Endpoint         | Description                    | Auth Required |
+| ------ | ---------------- | ------------------------------ | ------------- |
+| `POST` | `/auth/register` | Register a new user            | No            |
+| `POST` | `/auth/login`    | Login and get JWT cookie       | No            |
+| `POST` | `/auth/logout`   | Logout and clear cookie        | Yes           |
+| `GET`  | `/auth/profile`  | Get current user profile       | Yes           |
+| `GET`  | `/auth/verify`   | Verify token and get user info | Yes           |
+
 ### Users
 
-| Method   | Endpoint     | Description       |
-| -------- | ------------ | ----------------- |
-| `GET`    | `/users`     | Get all users     |
-| `GET`    | `/users/:id` | Get user by ID    |
-| `POST`   | `/users`     | Create a new user |
-| `PATCH`  | `/users/:id` | Update a user     |
-| `DELETE` | `/users/:id` | Delete a user     |
+| Method   | Endpoint                   | Description               | Auth Required |
+| -------- | -------------------------- | ------------------------- | ------------- |
+| `GET`    | `/users`                   | Get all users (paginated) | Yes           |
+| `GET`    | `/users/summary-analytics` | Get user analytics        | Yes           |
+| `GET`    | `/users/:id`               | Get user by ID            | Yes           |
+| `POST`   | `/users`                   | Create a new user         | Yes           |
+| `PATCH`  | `/users/:id`               | Update a user             | Yes           |
+| `DELETE` | `/users/:id`               | Delete a user             | Yes           |
 
-### Request Body Example (Create/Update User)
+### Query Parameters (GET /users)
+
+| Parameter | Type   | Description                              |
+| --------- | ------ | ---------------------------------------- |
+| `page`    | number | Page number (default: 1)                 |
+| `limit`   | number | Items per page (default: 10, max: 50)    |
+| `status`  | enum   | Filter by status (`active`, `suspended`) |
+| `role`    | enum   | Filter by role (`admin`, `user`)         |
+| `plan`    | enum   | Filter by plan (`free`, `pro`)           |
+| `search`  | string | Search by name or email                  |
+
+### Request Body Examples
+
+#### Register User
 
 ```json
 {
   "name": "John Doe",
   "email": "john@example.com",
+  "password": "securepassword123",
+  "company": "ABC Inc",
+  "role": "user",
+  "status": "active",
+  "plan": "free"
+}
+```
+
+#### Login
+
+```json
+{
+  "email": "john@example.com",
+  "password": "securepassword123"
+}
+```
+
+#### Create/Update User
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepassword123",
+  "company": "ABC Inc",
   "role": "user",
   "status": "active",
   "plan": "free"
@@ -104,17 +173,19 @@ The API will be available at `http://localhost:3000`. Keep in mind to use the pr
 
 ### User Properties
 
-| Field       | Type   | Description                         |
-| ----------- | ------ | ----------------------------------- |
-| `id`        | number | Auto-generated unique identifier    |
-| `name`      | string | User's full name (min 2 characters) |
-| `email`     | string | Unique email address                |
-| `role`      | enum   | `admin` or `user`                   |
-| `status`    | enum   | `active` or `suspended`             |
-| `plan`      | enum   | `free` or `pro`                     |
-| `lastLogin` | Date   | Last login timestamp (optional)     |
-| `createdAt` | Date   | Account creation timestamp          |
-| `updatedAt` | Date   | Last update timestamp               |
+| Field       | Type   | Description                           |
+| ----------- | ------ | ------------------------------------- |
+| `id`        | number | Auto-generated unique identifier      |
+| `name`      | string | User's full name (min 2 characters)   |
+| `email`     | string | Unique email address                  |
+| `password`  | string | Hashed password (min 8 characters)    |
+| `company`   | string | Company user works (min 3 characters) |
+| `role`      | enum   | `admin` or `user`                     |
+| `status`    | enum   | `active` or `suspended`               |
+| `plan`      | enum   | `free` or `pro`                       |
+| `lastLogin` | Date   | Last login timestamp (optional)       |
+| `createdAt` | Date   | Account creation timestamp            |
+| `updatedAt` | Date   | Last update timestamp                 |
 
 ## 📁 Project Structure
 
@@ -124,6 +195,21 @@ src/
 ├── app.module.ts           # Root module
 ├── app.controller.ts       # Root controller
 ├── app.service.ts          # Root service
+├── auth/
+│   ├── auth.module.ts      # Auth module
+│   ├── auth.controller.ts  # Auth routes (login, register, etc.)
+│   ├── auth.service.ts     # Auth business logic
+│   ├── dto/
+│   │   ├── login.dto.ts    # Login validation
+│   │   └── register.dto.ts # Register validation
+│   ├── guard/
+│   │   └── auth.guard.ts   # JWT authentication guard
+│   └── interfaces/
+│       └── jwt-payload.interface.ts
+├── common/
+│   ├── pagination.dto.ts   # Pagination & filtering DTO
+│   └── decorators/
+│       └── public.decorator.ts  # Public route decorator
 └── users/
     ├── users.module.ts     # Users module
     ├── users.controller.ts # Users controller (routes)
@@ -133,10 +219,14 @@ src/
     │   └── update-user.dto.ts  # Update user validation
     ├── entities/
     │   └── user.entity.ts  # User database entity
-    └── enums/
-        ├── user-role.enum.ts
-        ├── user-status.enum.ts
-        └── user-plan.enum.ts
+    ├── enums/
+    │   ├── user-role.enum.ts
+    │   ├── user-status.enum.ts
+    │   └── user-plan.enum.ts
+    └── utils/
+        ├── get-user-growth-data.ts
+        ├── get-plan-distribution-data.ts
+        └── get-weekly-activity-data.ts
 ```
 
 ## 📜 Available Scripts
