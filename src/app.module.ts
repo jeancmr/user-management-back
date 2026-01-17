@@ -26,6 +26,13 @@ import { APP_GUARD } from '@nestjs/core';
         database: configService.get<string>('DB_NAME'),
         autoLoadEntities: true,
         synchronize: true,
+        ssl: configService.get<string>('DB_SSL') === 'true',
+        extra:
+          configService.get<string>('DB_SSL') === 'true'
+            ? {
+                rejectUnauthorized: false,
+              }
+            : null,
       }),
     }),
     UsersModule,
