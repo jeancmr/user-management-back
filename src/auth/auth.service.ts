@@ -50,6 +50,7 @@ export class AuthService {
 
   async login({ email, password }: LoginDto, res: Response) {
     const userFound = await this.usersService.findOneByEmail(email);
+    const firstName = userFound?.name.split(' ')[0];
 
     if (!userFound) throw new NotFoundException(`User does not exist`);
 
@@ -61,7 +62,7 @@ export class AuthService {
     if (!isPasswordMatched)
       throw new UnauthorizedException('Password incorrect');
 
-    const payload = { email };
+    const payload = { email, name: firstName };
 
     const token = await this.jwtService.signAsync(payload);
 

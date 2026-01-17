@@ -10,11 +10,12 @@ import {
 import { UserRole } from '../enums/user-role.enum';
 import { UserStatus } from '../enums/user-status.enum';
 import { UserPlan } from '../enums/user-plan.enum';
+import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
+  @Transform(({ value }: { value: string }) => value.trim())
   @IsString()
   @MinLength(2)
-  @IsNotEmpty()
   name: string;
 
   @IsEmail()
