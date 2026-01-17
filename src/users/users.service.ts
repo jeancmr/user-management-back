@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -34,11 +34,26 @@ export class UsersService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, page = 1 } = paginationDto;
+    const { limit = 10, page = 1, status, role, plan } = paginationDto;
 
     const skip = (page - 1) * limit;
 
+    const where: FindOptionsWhere<User> = {};
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (role) {
+      where.role = role;
+    }
+
+    if (plan) {
+      where.plan = plan;
+    }
+
     const [users, total] = await this._userRepository.findAndCount({
+      where,
       skip,
       take: limit,
       order: {
