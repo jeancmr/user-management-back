@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { UserPlan, UserRole, UserStatus } from 'src/users/enums';
 
 export class PaginationDto {
@@ -19,6 +19,10 @@ export class PaginationDto {
   @IsEnum(UserStatus)
   @IsOptional()
   status?: UserStatus;
+
+  @IsString()
+  @IsOptional()
+  search?: string;
 
   @IsEnum(UserRole)
   @IsOptional()

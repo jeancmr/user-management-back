@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -34,22 +34,27 @@ export class UsersService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, page = 1, status, role, plan } = paginationDto;
+    const { limit = 10, page = 1, status, role, plan, search } = paginationDto;
 
     const skip = (page - 1) * limit;
 
-    const where: FindOptionsWhere<User> = {};
+    const where: FindOptionsWhere<User>[] = [];
 
-    if (status) {
-      where.status = status;
-    }
+    const baseFilters: FindOptionsWhere<User> = {};
 
-    if (role) {
-      where.role = role;
-    }
+    if (status) baseFilters.status = status;
 
-    if (plan) {
-      where.plan = plan;
+    if (role) baseFilters.role = role;
+
+    if (plan) baseFilters.plan = plan;
+
+    if (search) {
+      where.push(
+        { ...baseFilters, name: ILike(`%${search}%`) },
+        { ...baseFilters, email: ILike(`%${search}%`) },
+      );
+    } else {
+      where.push(baseFilters);
     }
 
     const [users, total] = await this._userRepository.findAndCount({
