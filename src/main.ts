@@ -12,7 +12,10 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://user-management-front-six.vercel.app']
+        : ['http://localhost:5173'],
     credentials: true,
   });
 
